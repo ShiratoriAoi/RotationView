@@ -4,15 +4,29 @@ import UIKit
 public class RotationView : UIView {
     public var functionList : [Int] //0: rotate, 1: scale, 2: rotate and scale, 3: 45 degrees rotate
     
-    public var lblCorners = [UILabel]() //left top, left bottom, right bottom, right top
-    public var minCornerSize = 20 as CGFloat
+    public var viewCorners = [UIView]() //left top, left bottom, right bottom, right top
+    public var minSize = 44 as CGFloat
     
     public var isShownCorner = true {
         didSet {
-            lblCorners.forEach { a in
+            viewCorners.forEach { a in
                 a.isHidden = !isShownCorner
             }
         }
+    }
+
+    //computed property
+    var scale : CGFloat{
+        let a = self.transform.a
+        let b = self.transform.b
+        return (a*a + b*b).squareRoot()
+    }
+
+    var angle : CGFloat{
+        let a = self.transform.a
+        let b = self.transform.b
+        let scale = (a*a + b*b).squareRoot()
+        return atan2(b/scale, a/scale)
     }
 
     public convenience init() {
@@ -20,20 +34,25 @@ public class RotationView : UIView {
         //left bottom:  1=scale
         //right bottom: 2=rotate and scale
         //right top:    3=45 degrees rotate
-        self.init(functionList: [0,1,2,3])
+        self.init(functionList: [0,1,2,3], cornerSize: 60)
     }
     
-    public init(functionList: [Int]) {
+    public init(functionList: [Int], cornerSize: CGFloat) {
         self.functionList = functionList
         super.init(frame: .zero)
 
+        //rotation view's recognizer
+        let selector = #selector(RotationView.pannedView(sender:))
+        let recognizer = UIPanGestureRecognizer(target: self, action: selector)
+        addGestureRecognizer(recognizer)
+
+        //corners view's initialization
         for i in 0..<4 {
-            let lbl = UILabel(frame: .zero)
-            lblCorners.append(lbl)
-            lbl.backgroundColor = .orange
-            addSubview(lbl)
-            
-            lbl.text = "\(i)"
+            let v = UIView()
+            viewCorners.append(v)
+            v.isUserInteractionEnabled = true
+            v.tag = i
+            addSubview(v)
 
             //constarints
             let ltA = leftAnchor
@@ -43,33 +62,35 @@ public class RotationView : UIView {
             let anchors = [(ltA, tpA), (ltA, btA), (rtA, btA), (rtA, tpA)]
             let A0 = anchors[i].0
             let A1 = anchors[i].1
-            lbl.translatesAutoresizingMaskIntoConstraints = false
-            lbl.centerXAnchor.constraint(equalTo: A0).isActive = true
-            lbl.centerYAnchor.constraint(equalTo: A1).isActive = true
-            lbl.heightAnchor.constraint(equalToConstant: 20).isActive = true
-            lbl.widthAnchor.constraint(equalToConstant: 20).isActive = true
+            v.translatesAutoresizingMaskIntoConstraints = false
+            v.centerXAnchor.constraint(equalTo: A0).isActive = true
+            v.centerYAnchor.constraint(equalTo: A1).isActive = true
+            v.heightAnchor.constraint(equalToConstant: 20).isActive = true
+            v.widthAnchor.constraint(equalToConstant: 20).isActive = true
             
             //recognizer
             if functionList[i] == 3 {
                 let selector2 = #selector(RotationView.tappedCorner(sender:))
                 let recognizer2 = UITapGestureRecognizer(target: self, action: selector2)
-                lbl.addGestureRecognizer(recognizer2)
+                v.addGestureRecognizer(recognizer2)
             } else {
                 let selector2 = #selector(RotationView.pannedCorner(sender:))
                 let recognizer2 = UIPanGestureRecognizer(target: self, action: selector2)
-                lbl.addGestureRecognizer(recognizer2)
+                v.addGestureRecognizer(recognizer2)
             }
-            lbl.isUserInteractionEnabled = true
-            lbl.tag = i
         }
 
-        let selector = #selector(RotationView.pannedView(sender:))
-        let recognizer = UIPanGestureRecognizer(target: self, action: selector)
-        addGestureRecognizer(recognizer)
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    func resizeCorners() {
+        viewCorners.forEach {
+            $0.transform = CGAffineTransform.identity
+            $0.transform = CGAffineTransform(scaleX: 1/scale, y: 1/scale)
+        }
     }
 
     @objc func pannedView(sender: UIPanGestureRecognizer) {
@@ -94,40 +115,38 @@ public class RotationView : UIView {
         
         let tr = sender.translation(in: self)
         let pt = sender.location(in: self)
-        let pt2 = CGPoint(x: bounds.width/2, y: bounds.height/2)
+        let ct = CGPoint(x: bounds.width/2, y: bounds.height/2)
         let pt0 = CGPoint(x: pt.x - tr.x, y: pt.y - tr.y)
         let tag = sender.view?.tag ?? -1
         let cornerAngle = CGFloat.pi/4 * CGFloat([3,5,7,1][tag])
         
         switch functionList[tag] {
-        case 0: //right top
-            let rotateAngle = angle(from: pt2, to: pt) + cornerAngle
+        case 0: //rotate
+            let rotateAngle = angle(from: ct, to: pt) + cornerAngle
             self.transform = self.transform.rotated(by: rotateAngle)
-        case 1: //right bottom
-            let d0 = distance(from: pt2, to: pt0)
-            let d = distance(from: pt2, to: pt)
-            let scale = CGFloat.maximum(d, minCornerSize) / CGFloat.maximum(d0, minCornerSize)
+        case 1: //scale
+            let d0 = distance(from: ct, to: pt0) * scale
+            let d = distance(from: ct, to: pt) * scale
+            let scale = CGFloat.maximum(d, minSize) / CGFloat.maximum(d0, minSize)
             self.transform = self.transform.scaledBy(x: scale, y: scale)
             sender.setTranslation(.zero, in: self)
-        case 2: //left top
-            let d0 = distance(from: pt2, to: pt0)
-            let d = distance(from: pt2, to: pt)
-            let scale = CGFloat.maximum(d, minCornerSize) / CGFloat.maximum(d0, minCornerSize)
+            resizeCorners()
+        case 2: //rotate and scale
+            let rotateAngle = angle(from: ct, to: pt) + cornerAngle
+            self.transform = self.transform.rotated(by: rotateAngle)
+
+            let d0 = distance(from: ct, to: pt0) * scale
+            let d = distance(from: ct, to: pt) * scale
+            let scale = CGFloat.maximum(d, minSize) / CGFloat.maximum(d0, minSize)
             self.transform = self.transform.scaledBy(x: scale, y: scale)
             sender.setTranslation(.zero, in: self)
-            
-            let rotateAngle = angle(from: pt2, to: pt) + cornerAngle
-            self.transform = self.transform.rotated(by: rotateAngle)
+            resizeCorners()
         default:
             break
         }
     }
     
     @objc func tappedCorner(sender: UITapGestureRecognizer) {
-        let a = self.transform.a
-        let b = self.transform.b
-        let scale = (a*a + b*b).squareRoot()
-        let angle = atan2(b/scale, a/scale)
         let fixedAngle = ceil(angle * 4 / CGFloat.pi) * CGFloat.pi / 4
         var deltaAngle = fixedAngle - angle
         if deltaAngle < 0.00000000001 { //equal 0 dato tama ni komaru. hobo 0 no jouken.
