@@ -9,7 +9,7 @@
 Pod::Spec.new do |s|
   s.name             = 'RotationView'
   s.version          = '0.1.0'
-  s.summary          = 'A short description of RotationView.'
+  s.summary          = 'RotationView inherits from UIView and provides rotation functionality.'
 
 # This description is used to generate tags and improve search results.
 #   * Think: What does it do? Why did you write it? What is the focus?
@@ -18,7 +18,8 @@ Pod::Spec.new do |s|
 #   * Finally, don't worry about the indent, CocoaPods strips it!
 
   s.description      = <<-DESC
-TODO: Add long description of the pod here.
+  RotationView inherits from UIView. A rotation view has a small view on each corner. 
+  Users can manipulate the corner views to rotate or scale the rotation view.
                        DESC
 
   s.homepage         = 'https://github.com/Aoi SHIRATORI/RotationView'

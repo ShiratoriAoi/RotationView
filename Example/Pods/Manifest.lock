@@ -1,0 +1,16 @@
+PODS:
+  - RotationView (0.1.0)
+
+DEPENDENCIES:
+  - RotationView (from `../`)
+
+EXTERNAL SOURCES:
+  RotationView:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  RotationView: a6f733463a1438f84f3121f8096fd50352d77705
+
+PODFILE CHECKSUM: 92ff5c7e727238338e5a746cac2edc25d620b395
+
+COCOAPODS: 1.11.2
