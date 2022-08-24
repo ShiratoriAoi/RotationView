@@ -1,7 +1,7 @@
 
 import UIKit
 
-public class RotationView : UIView {
+open class RotationView : UIView {
     public var functionList : [Int] //0: rotate, 1: scale, 2: rotate and scale, 3: 45 degrees rotate
     
     public var viewCorners = [UIView]() //left top, left bottom, right bottom, right top
