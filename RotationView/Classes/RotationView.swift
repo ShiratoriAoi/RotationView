@@ -34,7 +34,7 @@ open class RotationView : UIView {
         //left bottom:  1=scale
         //right bottom: 2=rotate and scale
         //right top:    3=45 degrees rotate
-        self.init(functionList: [0,1,2,3], cornerSize: 60)
+        self.init(functionList: [0,1,2,3], cornerSize: 44)
     }
     
     public init(functionList: [Int], cornerSize: CGFloat) {
@@ -65,8 +65,8 @@ open class RotationView : UIView {
             v.translatesAutoresizingMaskIntoConstraints = false
             v.centerXAnchor.constraint(equalTo: A0).isActive = true
             v.centerYAnchor.constraint(equalTo: A1).isActive = true
-            v.heightAnchor.constraint(equalToConstant: 20).isActive = true
-            v.widthAnchor.constraint(equalToConstant: 20).isActive = true
+            v.heightAnchor.constraint(equalToConstant: cornerSize).isActive = true
+            v.widthAnchor.constraint(equalToConstant: cornerSize).isActive = true
             
             //recognizer
             if functionList[i] == 3 {
