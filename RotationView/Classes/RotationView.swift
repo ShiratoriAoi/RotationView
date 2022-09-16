@@ -12,8 +12,13 @@ open class RotationView : UIView {
             viewCorners.forEach { a in
                 a.isHidden = !isShownCorner
             }
+            gestureRecognizers.forEach { a in 
+                a.isEnabled = isShownCorner
+            }
         }
     }
+
+    var gestureRecognizers = [UIGestureRecognizer]()
 
     //computed property
     var scale : CGFloat{
@@ -45,6 +50,7 @@ open class RotationView : UIView {
         let selector = #selector(RotationView.pannedView(sender:))
         let recognizer = UIPanGestureRecognizer(target: self, action: selector)
         addGestureRecognizer(recognizer)
+        gestureRecognizers.append(recognizer)
 
         //corners view's initialization
         for i in 0..<4 {
@@ -73,10 +79,12 @@ open class RotationView : UIView {
                 let selector2 = #selector(RotationView.tappedCorner(sender:))
                 let recognizer2 = UITapGestureRecognizer(target: self, action: selector2)
                 v.addGestureRecognizer(recognizer2)
+                gestureRecognizers.append(recognizer2)
             } else {
                 let selector2 = #selector(RotationView.pannedCorner(sender:))
                 let recognizer2 = UIPanGestureRecognizer(target: self, action: selector2)
                 v.addGestureRecognizer(recognizer2)
+                gestureRecognizers.append(recognizer2)
             }
         }
 
