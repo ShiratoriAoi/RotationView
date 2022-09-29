@@ -96,7 +96,7 @@ open class RotationView : UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func resize() {
+    public func resize() {
         if isResizingBounds {
             let scale = self.scale
             let center = self.center
