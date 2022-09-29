@@ -18,16 +18,18 @@ open class RotationView : UIView {
         }
     }
 
+    public var isResizingBounds = true
+
     var recognizers = [UIGestureRecognizer]()
 
     //computed property
-    var scale : CGFloat{
+    public var scale : CGFloat{
         let a = self.transform.a
         let b = self.transform.b
         return (a*a + b*b).squareRoot()
     }
 
-    var angle : CGFloat{
+    public var angle : CGFloat{
         let a = self.transform.a
         let b = self.transform.b
         let scale = (a*a + b*b).squareRoot()
@@ -94,11 +96,22 @@ open class RotationView : UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func resizeCorners() {
-        viewCorners.forEach {
-            $0.transform = CGAffineTransform.identity
-            $0.transform = CGAffineTransform(scaleX: 1/scale, y: 1/scale)
+    func resize() {
+        if isResizingBounds {
+            let scale = self.scale
+            let center = self.center
+            self.transform = self.transform.scaledBy(x: 1/scale, y: 1/scale)
+            self.bounds.size = CGSize(width: bounds.width*scale, height: bounds.height*scale)
+            //self.center = center
+        } else {
+            viewCorners.forEach {
+                $0.transform = CGAffineTransform.identity
+                $0.transform = CGAffineTransform(scaleX: 1/scale, y: 1/scale)
+            }
         }
+        
+        print(self.scale)
+        print(self.bounds.size)
     }
 
     @objc func pannedView(sender: UIPanGestureRecognizer) {
@@ -138,7 +151,7 @@ open class RotationView : UIView {
             let scale = CGFloat.maximum(d, minSize) / CGFloat.maximum(d0, minSize)
             self.transform = self.transform.scaledBy(x: scale, y: scale)
             sender.setTranslation(.zero, in: self)
-            resizeCorners()
+            resize()
         case 2: //rotate and scale
             let rotateAngle = angle(from: ct, to: pt) + cornerAngle
             self.transform = self.transform.rotated(by: rotateAngle)
@@ -148,7 +161,7 @@ open class RotationView : UIView {
             let scale = CGFloat.maximum(d, minSize) / CGFloat.maximum(d0, minSize)
             self.transform = self.transform.scaledBy(x: scale, y: scale)
             sender.setTranslation(.zero, in: self)
-            resizeCorners()
+            resize()
         default:
             break
         }
