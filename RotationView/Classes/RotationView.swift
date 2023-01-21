@@ -5,6 +5,14 @@ open class RotationView : UIView {
     public var functionList : [Int] //0: rotate, 1: scale, 2: rotate and scale, 3: 45 degrees rotate
     
     public var viewCorners = [UIView]() //left top, left bottom, right bottom, right top
+    public var cornerScale = 1.0 {
+        didSet {
+            viewCorners.forEach { 
+                $0.transform = CGAffineTransform.identity
+                $0.transform = CGAffineTransform(scaleX: cornerScale, y: cornerScale)
+            }
+        }
+    }
     public var minSize = 44 as CGFloat
     
     public var isShownCorner = true {
@@ -17,8 +25,6 @@ open class RotationView : UIView {
             }
         }
     }
-
-    public var isResizingBounds = true
 
     var recognizers = [UIGestureRecognizer]()
 
@@ -98,21 +104,9 @@ open class RotationView : UIView {
     }
 
     open func resize() {
-        if isResizingBounds {
-            let scale = self.scale
-            //let center = self.center
-            self.transform = self.transform.scaledBy(x: 1/scale, y: 1/scale)
-            self.bounds.size = CGSize(width: bounds.width*scale, height: bounds.height*scale)
-            //self.center = center
-        } else {
-            viewCorners.forEach {
-                $0.transform = CGAffineTransform.identity
-                $0.transform = CGAffineTransform(scaleX: 1/scale, y: 1/scale)
-            }
-        }
-        
-        print(self.scale)
-        print(self.bounds.size)
+        let scale = self.scale //scale ha transform ni izon suru computed property nanode shouryaku fukanou.(tabun.)
+        self.transform = self.transform.scaledBy(x: 1/scale, y: 1/scale)
+        self.bounds.size = CGSize(width: bounds.width*scale, height: bounds.height*scale)
     }
 
     @objc func pannedView(sender: UIPanGestureRecognizer) {
