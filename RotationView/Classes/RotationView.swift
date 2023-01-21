@@ -32,10 +32,11 @@ open class RotationView : UIView {
     public var angle : CGFloat{
         let a = self.transform.a
         let b = self.transform.b
-        let scale = (a*a + b*b).squareRoot()
-        return atan2(b/scale, a/scale)
+        //let scale = (a*a + b*b).squareRoot()
+        //return atan2(b/scale, a/scale)
+        return atan2(b,a)
     }
-
+    
     public convenience init() {
         //left top:     0=rotate
         //left bottom:  1=scale
@@ -99,7 +100,7 @@ open class RotationView : UIView {
     open func resize() {
         if isResizingBounds {
             let scale = self.scale
-            let center = self.center
+            //let center = self.center
             self.transform = self.transform.scaledBy(x: 1/scale, y: 1/scale)
             self.bounds.size = CGSize(width: bounds.width*scale, height: bounds.height*scale)
             //self.center = center
@@ -139,10 +140,11 @@ open class RotationView : UIView {
         let ct = CGPoint(x: bounds.width/2, y: bounds.height/2)
         let pt0 = CGPoint(x: pt.x - tr.x, y: pt.y - tr.y)
         let tag = sender.view?.tag ?? -1
-        let cornerAngle = CGFloat.pi/4 * CGFloat([3,5,7,1][tag])
         
         switch functionList[tag] {
         case 0: //rotate
+            let theta = atan2(bounds.height, bounds.width)
+            let cornerAngle = [CGFloat.pi-theta, CGFloat.pi+theta, -theta, theta][tag]
             let rotateAngle = angle(from: ct, to: pt) + cornerAngle
             self.transform = self.transform.rotated(by: rotateAngle)
         case 1: //scale
@@ -153,6 +155,8 @@ open class RotationView : UIView {
             sender.setTranslation(.zero, in: self)
             resize()
         case 2: //rotate and scale
+            let theta = atan2(bounds.height, bounds.width)
+            let cornerAngle = [CGFloat.pi-theta, CGFloat.pi+theta, -theta, theta][tag]
             let rotateAngle = angle(from: ct, to: pt) + cornerAngle
             self.transform = self.transform.rotated(by: rotateAngle)
 
